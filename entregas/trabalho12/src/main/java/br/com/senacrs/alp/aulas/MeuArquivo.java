@@ -1,48 +1,38 @@
-package br.com.senacrs.alp.aulas; import java.io.File;
+package br.com.senacrs.alp.aulas;
 
-class MeuArquivo implements ArquivoConfiguracao, Configuracao {
+public class MeuArquivo implements Configuracao {
 
 	private ArquivoConfiguracao config;
-	
 
-	MeuArquivo (ArquivoConfiguracao config){
-
-		if(config == null){
-			throw new IllegalArgumentException();
-		}
+	public MeuArquivo(ArquivoConfiguracao config){
 
 		this.config = config;
-	}
+	}			
 
 	@Override
 	public ArquivoConfiguracao getArquivoConfiguracao() {
 
 		ArquivoConfiguracao resultado = null;
+
+		resultado = ArquivoConfiguracao.class.cast(config);
+
 		return resultado;
 	}
 
 	@Override
 	public boolean valido() {
 
-		return false;
+		boolean resultado = false;
+
+		if((ArquivoConfiguracao.class.cast(config).getPort() >= 1024) 
+				&& (ArquivoConfiguracao.class.cast(config).getPort()<= 65535)
+				&& (ArquivoConfiguracao.class.cast(config).getRootDir().equals("./html"))
+				&& (ArquivoConfiguracao.class.cast(config).getErrorDir().equals("./html/error/"))) {
+
+			resultado = true;
+		}
+
+
+		return resultado;
 	}
-
-	@Override
-	public String getRootDir() {
-
-		return null;
-	}
-
-	@Override
-	public String getErrorDir() {
-
-		return null;
-	}
-
-	@Override
-	public int getPort() {
-
-		return 0;
-	}
-
 }
