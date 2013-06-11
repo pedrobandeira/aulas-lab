@@ -1,136 +1,141 @@
 package br.com.senacrs.alp.aulas;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MeuArquivoConfiguracao implements ArquivoConfiguracao {
 
-	private String arquivoEntrada;
+	private String arquivoEntrada = null;
+	private Map<String, String> mpler = new HashMap<String, String>();
 
 	public MeuArquivoConfiguracao(String arquivoEntrada) {
-
-		verificaArquivoEntrada(arquivoEntrada);
-		File file = new File(arquivoEntrada);
-		verificaFile(file);
 		this.arquivoEntrada = arquivoEntrada;
-
+		testarArquivo(arquivoEntrada);
+		leitura(arquivoEntrada);
 	}
 
-	private void verificaFile(File file) {
+	private void leitura(String arquivoEntrada) {
+		File file = new File(arquivoEntrada);
+		FileReader reader = null;
+		BufferedReader leitor = null;
+		String linha, chave, valor = null;
+		String[] chaveValor = new String[2];
 
-		if (!file.exists() || file.isDirectory()) {
-			throw new IllegalArgumentException();
+		try {
+
+		 	reader = new FileReader(file);
+			leitor = new BufferedReader(reader);
+			linha = leitor.readLine();
+			while (linha != null) {
+				while(linha.contains("#")){
+					linha = tratarComentarios(linha);
+				}
+				if(linha.contains("=")){
+					chaveValor = linha.split("=");
+					if (chaveValor.length == 2){
+						chave = chaveValor[0].trim();
+						valor = chaveValor[1].trim();
+						mpler.put(chave, valor);
+						testarMapa(mpler);
+					} else {
+						throw new IllegalArgumentException();
+					}
+				}
+				linha = leitor.readLine();
+			}
+
+			if(mpler.size() < 3){
+				throw new IllegalArgumentException();
+			}
+			leitor.close();
+		} catch (FileNotFoundException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IOException e){
+			throw new IllegalArgumentException(e);
 		}
 	}
 
-	private void verificaArquivoEntrada(String arquivoEntrada) {
+	private void testarMapa(Map<String, String> mpler) {
+		if(mpler.containsKey("root_dir")){
+			if (mpler.get("root_dir").startsWith("./"));
+			else {
 
-		if (arquivoEntrada == null) {
+				throw new IllegalArgumentException();
+			}
+		}
+		if(mpler.containsKey("error_dir")){
+			if (mpler.get("error_dir").startsWith("./"));
+			else {
+				throw new IllegalArgumentException();
+			}
+		}
+		if(mpler.containsKey("port")){
+			if (Integer.parseInt(mpler.get("port")) >= 1000 );
+			else {
+				throw new IllegalArgumentException();
+			}
+		}
+	}
+
+	private String tratarComentarios(String linha) {
+		String resultado = null;
+		if(linha.startsWith("#")){
+			resultado = "";
+		} else {
+			String[] aux = linha.split("#");
+			if (aux.length == 2){
+				resultado = aux[0].trim();
+			} else {
+				throw new IllegalArgumentException();
+			}
+		}
+		return resultado;
+	}
+
+	private void testarArquivo(String arquivoEntrada) {
+		File file = new File(arquivoEntrada);
+		if (!file.exists()){
+			throw new IllegalArgumentException();
+		}
+
+		if (!file.isFile()){
 			throw new IllegalArgumentException();
 		}
 	}
 
 	@Override
 	public String getRootDir() {
-
-		FileReader filereader = null;
-		BufferedReader buffreader = null;
-		String resultado = null, linha;
-		try {
-
-			filereader = new FileReader(arquivoEntrada);
-			buffreader = new BufferedReader(filereader);
-			Map<String, String> mapa = new HashMap<String, String>();
-
-			while ((linha = buffreader.readLine()) != null) {
-
-				String l[] = linha.split("=");
-
-				if (l.length == 2) {
-					mapa.put(l[0].trim(), l[1].trim());
-				}
+		String resultado = null;
+		if (mpler.containsKey("root_dir")){
+			if (mpler.get("root_dir").startsWith("./")){
+				resultado = mpler.get("root_dir");
+			} else {
+				throw new IllegalArgumentException();
 			}
-			buffreader.close();
-
-			resultado = mapa.get("root_dir");
-
-		} catch (FileNotFoundException e) {
-			throw new IllegalStateException();
-		} catch (IOException e) {
-			throw new IllegalStateException();
 		}
-
 		return resultado;
-
 	}
 
 	@Override
 	public String getErrorDir() {
-
-		FileReader filereader = null;
-		BufferedReader buffreader = null;
-		String resultado = null, linha;
-		try {
-
-			filereader = new FileReader(arquivoEntrada);
-			buffreader = new BufferedReader(filereader);
-			Map<String, String> mapa = new HashMap<String, String>();
-
-			while ((linha = buffreader.readLine()) != null) {
-
-				String l[] = linha.split("=");
-
-				if (l.length == 2) {
-					mapa.put(l[0].trim(), l[1].trim());
-				}
-			}
-			buffreader.close();
-			resultado = mapa.get("error_dir");
-
-		} catch (FileNotFoundException e) {
-			throw new IllegalStateException();
-		} catch (IOException e) {
-			throw new IllegalStateException();
+		String resultado = null;
+		if (mpler.containsKey("error_dir")){
+			resultado = mpler.get("error_dir");
 		}
-
 		return resultado;
-
 	}
 
 	@Override
 	public int getPort() {
-
-		FileReader filereader = null;
-		BufferedReader buffreader = null;
-		String linha;
 		int resultado = 0;
-		try {
-
-			filereader = new FileReader(arquivoEntrada);
-			buffreader = new BufferedReader(filereader);
-			Map<String, String> mapa = new HashMap<String, String>();
-
-			while ((linha = buffreader.readLine()) != null) {
-
-				String l[] = linha.split("=");
-
-				if (l.length == 2) {
-					String porta[] = l[1].split("#");
-					if (porta.length == 2) {
-						mapa.put(l[0].trim(), porta[0].trim());
-					}
-				}
-			}
-			buffreader.close();
-			resultado = Integer.parseInt(mapa.get("port"));
-
-		} catch (FileNotFoundException e) {
-			throw new IllegalStateException();
-		} catch (IOException e) {
-			throw new IllegalStateException();
+		if (mpler.containsKey("port")){
+			resultado = Integer.parseInt(mpler.get("port"));
 		}
-
 		return resultado;
-
 	}
 }
