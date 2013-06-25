@@ -1,21 +1,21 @@
 package br.com.senacrs.alp.aulas;
 
 public class Factory {
-	
+
 	private static final Factory instancia = new Factory();
-	
+
 	private Factory() {
 	}
-	
+
 	public ObterCabecalhoRequisicaoGet criarValidacao(ArquivoConfiguracao config) {
-	
-		ObterCabecalhoRequisicaoGet resultado = new zObterCabecalhoRequisicaoGet(config);
-		
-		//implementar
-		
+
+		ObterCabecalhoRequisicaoGet resultado = null;
+
+		resultado = new MeuCriarValidacao(config);
+
 		return resultado;
 	}
-	
+
 	public static Factory getInstancia() {
 		return instancia;
 	}
